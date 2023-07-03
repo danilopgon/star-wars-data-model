@@ -7,6 +7,8 @@ from eralchemy2 import render_er
 
 Base = declarative_base()
 
+Base = declarative_base()
+
 
 class User(Base):
     __tablename__ = "user"
@@ -35,6 +37,24 @@ class Planet(Base):
     edited = Column(DateTime, nullable=False)
 
 
+pilots = Table(
+    "pilots",
+    Base.metadata,
+    Column("id", Integer, primary_key=True),
+    Column("vehicle_id", ForeignKey("vehicle.id")),
+    Column("character_id", ForeignKey("character.id")),
+)
+
+
+passengers = Table(
+    "passengers",
+    Base.metadata,
+    Column("id", Integer, primary_key=True),
+    Column("vehicle_id", ForeignKey("vehicle.id")),
+    Column("character_id", ForeignKey("character.id")),
+)
+
+
 class Vehicle(Base):
     __tablename__ = "vehicle"
     id = Column(Integer, primary_key=True)
@@ -50,25 +70,15 @@ class Vehicle(Base):
     created = Column(DateTime, nullable=False)
     edited = Column(DateTime, nullable=False)
     url = Column(String, nullable=False, unique=True)
-
-
-class Pilots(DeclarativeBase):
-    pilots = Table(
-        "pilots",
-        Base.metadata,
-        Column("id", Integer, primary_key=True),
-        Column("vehicle_id", ForeignKey("vehicle.id")),
-        Column("pilot_id", ForeignKey("character.id")),
+    pilots = relationship(
+        "Character",
+        secondary=pilots,
+        backref="vehicles",
     )
-
-
-class Passengers(DeclarativeBase):
-    passengers = Table(
-        "passengers",
-        Base.metadata,
-        Column("id", Integer, primary_key=True),
-        Column("vehicle_id", ForeignKey("vehicle.id")),
-        Column("passenger_id", ForeignKey("character.id")),
+    passengers = relationship(
+        "Character",
+        secondary=passengers,
+        backref="vehicles",
     )
 
 
@@ -76,7 +86,6 @@ class Character(Base):
     __tablename__ = "character"
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    character_id = Column(ForeignKey("Character.id"))
     height = Column(Integer, nullable=False)
     mass = Column(Integer, nullable=False)
     hair_color = Column(String, nullable=False)
@@ -93,6 +102,8 @@ class Character(Base):
     edited = Column(DateTime)
     url = Column(String)
 
+
+# Draw from SQLAlchemy base
 
 ## Draw from SQLAlchemy base
 render_er(Base, "diagram.png")
